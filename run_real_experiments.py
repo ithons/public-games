@@ -185,6 +185,7 @@ def get_memory_kwargs(memory_type: str) -> dict:
         "summary": {"max_words": 50},
         "structured": {"fair_share_fraction": 0.5},
         "hybrid": {"max_note_words": 20, "fair_share_fraction": 0.5},
+        "hybrid_neutral": {"max_note_words": 20, "fair_share_fraction": 0.5},
     }
     return defaults.get(memory_type, {})
 

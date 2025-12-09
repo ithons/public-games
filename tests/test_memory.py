@@ -33,7 +33,7 @@ def make_round_info(
 
 class TestMemoryRegistry:
     def test_all_memory_types_registered(self):
-        expected = {"none", "full_history", "summary", "structured", "hybrid"}
+        expected = {"none", "full_history", "summary", "structured", "hybrid", "hybrid_neutral"}
         assert set(MEMORY_REGISTRY.keys()) == expected
     
     def test_create_memory_factory(self):

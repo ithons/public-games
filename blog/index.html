@@ -15,7 +15,7 @@
                 Investigating the role of memory representation in multi-agent social dilemmas
             </p>
             <p class="meta">
-                Final Project · <a href="https://github.com">Source Code</a>
+                Final Project · <a href="https://github.com/ithons/public-games">Source Code</a>
             </p>
         </div>
     </header>
@@ -246,6 +246,16 @@
                     Total prompt + completion tokens per episode.
                 </p>
             </div>
+
+            <h3>Implementation Notes</h3>
+
+            <p>
+                All experiments used the OpenAI API with GPT-4o-mini (gpt-4o-mini-2024-07-18). Temperature was set to 0.7 for all conditions. Agents were prompted to return JSON-formatted decisions; malformed responses were re-requested up to 3 times before marking the round as a contribution of 0. No systematic tracking of API failures was implemented; anecdotally, failures were rare (&lt;1% of rounds).
+            </p>
+
+            <p>
+                Hyperparameters for structured memory (exponential moving average β=0.3, defection thresholds of 50% max contribution and 70% group average) were set a priori based on intuition and not tuned. The 20-word limit for strategy notes and 50-word limit for summaries were similarly fixed before experimentation.
+            </p>
         </section>
 
         <!-- Results -->
@@ -285,19 +295,7 @@
             </figure>
 
             <p>
-                The welfare results (Figure 2) are unambiguous:
-            </p>
-
-            <ul>
-                <li><strong>Hybrid</strong>: 240.0 (95% CI [240.0, 240.0]) — the theoretical maximum</li>
-                <li><strong>Summary</strong>: 124.0 (95% CI [122.1, 126.2]) — slight improvement over baseline</li>
-                <li><strong>Structured</strong>: 123.0 (95% CI [120.7, 126.0]) — similar to summary</li>
-                <li><strong>Full History</strong>: 120.5 (95% CI [120.0, 121.4]) — no improvement</li>
-                <li><strong>None</strong>: 120.3 (95% CI [120.0, 120.7]) — baseline</li>
-            </ul>
-
-            <p>
-                Hybrid achieves <strong>exactly 2× the welfare</strong> of baseline conditions. The 95% CI for hybrid has zero width because all 15 episodes achieved identical perfect cooperation.
+                Hybrid achieves the theoretical maximum (240), exactly <strong>2× the welfare</strong> of all other conditions, which cluster tightly around 120 regardless of memory type. The full results appear in the Summary Table below. Notably, the 95% CI for hybrid has zero width—all 15 episodes achieved identical perfect cooperation.
             </p>
 
             <h3>Cost-Performance Tradeoff</h3>
@@ -412,7 +410,7 @@
             <figure>
                 <img src="assets/ablation_hybrid_vs_structured.png" alt="Ablation: hybrid vs structured">
                 <figcaption>
-                    <strong>Figure 5:</strong> Ablation comparing none, structured, and hybrid. The gap between structured (~120) and hybrid (~236) demonstrates that the strategy note is the key component.
+                    <strong>Figure 5:</strong> Ablation comparing none, structured, and hybrid. The gap between structured (~121) and hybrid (~237) demonstrates that the strategy note is the key component.
                 </figcaption>
             </figure>
 
@@ -439,8 +437,39 @@
                 <li><strong>Commitment anchoring</strong>: Once agents write "cooperate," they maintain consistency with their stated strategy</li>
             </ol>
 
+            <h3>Isolating the Priming Effect</h3>
+
             <p>
-                This finding has important implications: simply adding numerical context (the trust table) does not change behavior. What matters is prompting the model to <em>reason strategically about cooperation</em>.
+                To distinguish whether the strategy note effect comes from articulation alone or from cooperative priming, I ran an additional ablation with a <strong>neutrally-initialized</strong> strategy note: "Decide each round based on the situation and observed outcomes."
+            </p>
+
+            <figure>
+                <img src="assets/neutral_note_ablation.png" alt="Neutral vs cooperative strategy note">
+                <figcaption>
+                    <strong>Figure 7:</strong> Welfare comparison between no memory, hybrid with neutral initialization, and hybrid with cooperative initialization. Error bars show 95% bootstrap CI.
+                </figcaption>
+            </figure>
+
+            <p>
+                The results are striking:
+            </p>
+
+            <ul>
+                <li><strong>None</strong>: 120.0 welfare</li>
+                <li><strong>Hybrid-Neutral</strong>: 124.2 welfare [121.0, 127.9]</li>
+                <li><strong>Hybrid (cooperative)</strong>: 236.6 welfare [229.9, 240.0]</li>
+            </ul>
+
+            <p>
+                Hybrid-Neutral performs nearly identically to the no-memory baseline, while cooperative Hybrid achieves ~2× welfare. This confirms that <strong>the cooperative content of the initial seed is necessary</strong>—merely having a strategy note field does not unlock cooperation. The model needs to be explicitly primed with cooperative intent.
+            </p>
+
+            <p>
+                This has practical implications: when designing memory for multi-agent LLM systems, the <em>content</em> of initial prompts matters as much as the <em>structure</em>. A neutral scaffold provides no benefit; the scaffold must encode the desired behavioral orientation.
+            </p>
+
+            <p>
+                This finding has important implications: simply adding numerical context (the trust table) does not change behavior. What matters is prompting the model to <em>reason strategically about cooperation</em>—and that reasoning must be seeded with cooperative intent.
             </p>
         </section>
 
@@ -499,15 +528,15 @@
             <h3>The Strategy Note Effect</h3>
 
             <p>
-                The key finding is that <strong>hybrid memory's success comes from the strategy note, not the trust table</strong>. This suggests that effective LLM agent memory requires prompting the model to engage in explicit strategic reasoning.
+                The key finding is that <strong>hybrid memory's success comes from the strategy note, not the trust table</strong>—and specifically, from the <strong>cooperative content</strong> of that note. The neutral-note ablation confirms this: a strategy note initialized with "Decide each round based on the situation and observed outcomes" performs no better than baseline.
             </p>
 
             <p>
-                The initial strategy note is simply: <em>"Start by cooperating to establish trust."</em> This brief instruction appears sufficient to anchor cooperative behavior. Once agents commit to cooperation in their notes, they maintain consistency.
+                The initial cooperative strategy note is simply: <em>"Start by cooperating to establish trust."</em> This brief instruction is sufficient to anchor cooperative behavior. Once agents commit to cooperation in their notes, they maintain consistency. The cooperative content provides the "push" that agents need to move from moderate (~50%) to full (100%) cooperation.
             </p>
 
             <p>
-                This finding echoes research on chain-of-thought prompting: asking models to articulate their reasoning can substantially change their behavior. Here, the "reasoning" is strategic rather than logical.
+                This finding echoes research on chain-of-thought prompting: asking models to articulate their reasoning can substantially change their behavior. Here, the "reasoning" is strategic rather than logical—but the content of that reasoning matters. A neutral articulation prompt does not help; the articulation must encode cooperative intent.
             </p>
 
             <h3>Baseline Cooperation is Robust</h3>
@@ -526,8 +555,9 @@
                 <li><strong>Single model</strong>: Results are specific to GPT-4o-mini; other models may show different baseline cooperation levels</li>
                 <li><strong>Simple environment</strong>: The public goods game, while strategically rich, is far simpler than real-world multi-agent scenarios</li>
                 <li><strong>Homogeneous agents</strong>: All agents use identical policies; heterogeneous populations might show different dynamics</li>
-                <li><strong>Limited episodes</strong>: With 10–15 episodes per condition, confidence intervals are meaningful but not narrow</li>
-                <li><strong>Strategy note confound</strong>: The initial note explicitly encourages cooperation; a neutral or defection-encouraging note might produce different results</li>
+                <li><strong>Limited episodes</strong>: With 10–15 episodes per condition, confidence intervals for non-hybrid conditions span ~5 welfare points. Doubling the episode count would approximately halve CI widths, strengthening claims that full history and structured memory provide no meaningful improvement over baseline.</li>
+                <li><strong>Strategy note initialization</strong>: The neutral-note ablation clarifies the role of cooperative priming, but further variations (e.g., competitive initialization: "Maximize your own payoff") remain unexplored</li>
+                <li><strong>Temperature effects unexplored</strong>: All experiments used temperature=0.7. The robust ~50% baseline cooperation could be an artifact of this sampling temperature. At temperature=0, agents might exhibit different default behavior. Future work should test whether the strategy note effect persists across temperature settings.</li>
             </ul>
         </section>
 
@@ -550,7 +580,21 @@
             <h3>Memory in Neural Agents</h3>
 
             <p>
-                Memory augmentation spans LSTMs, Neural Turing Machines, and retrieval-augmented generation. For LLM agents, recent work explores episodic memory (Packer et al., 2023) and working memory abstractions (Sumers et al., 2023). The contribution here is systematic comparison of memory representations under a fixed context budget with cooperation metrics.
+                Memory augmentation spans LSTMs, Neural Turing Machines (Graves et al., 2014), and retrieval-augmented generation (Lewis et al., 2020). For LLM agents, recent work explores episodic memory (Packer et al., 2023) and working memory abstractions (Sumers et al., 2023). The contribution here is systematic comparison of memory representations under a fixed context budget with cooperation metrics.
+            </p>
+
+            <h3>Prompting and Self-Reflection</h3>
+
+            <p>
+                Chain-of-thought prompting (Wei et al., 2022) demonstrates that asking models to articulate intermediate reasoning steps substantially improves performance on complex tasks. Our strategy note may function analogously: by prompting agents to verbalize their strategic approach, we elicit more deliberate cooperative behavior.
+            </p>
+
+            <p>
+                Reflexion (Shinn et al., 2023) extends this to agentic settings, where agents maintain verbal self-feedback across episodes. Our hybrid memory shares this structure: the strategy note serves as a persistent self-instruction that agents update based on outcomes. The key difference is that our notes are extremely brief (20 words) yet still effective.
+            </p>
+
+            <p>
+                This connection suggests the strategy note effect may not be unique to multi-agent cooperation but rather an instance of a broader phenomenon: explicit verbalization of intent modifies LLM behavior more than equivalent implicit information. Related work on role prompting supports this observation—instructing models to adopt specific personas or strategic orientations can alter outputs even without changing the underlying task.
             </p>
 
             <h3>Gap Statement</h3>
@@ -572,6 +616,7 @@
                 <li><strong>Hybrid memory achieves 2× welfare</strong> (240 vs ~120) by enabling perfect cooperation</li>
                 <li><strong>Non-hybrid conditions cluster tightly near baseline</strong>—full history, summary, and structured memory differ from no memory by only a few percent</li>
                 <li><strong>The strategy note is the key component</strong>—the trust table alone does not change behavior</li>
+                <li><strong>Cooperative priming is necessary</strong>—a neutrally-initialized strategy note achieves baseline welfare (~124), indicating that articulation alone is insufficient; the cooperative seed content is required</li>
                 <li><strong>The effect is robust</strong> across different multiplier values (α = 1.5, 1.8, 2.1)</li>
             </ol>
 
@@ -594,7 +639,7 @@
             <h3>Future Directions</h3>
 
             <ul>
-                <li><strong>Note initialization</strong>: Testing neutral, cooperative, or competitive initial strategy notes</li>
+                <li><strong>Competitive initialization</strong>: Testing defection-encouraging notes (e.g., "Maximize your own payoff regardless of others")</li>
                 <li><strong>Heterogeneous agents</strong>: Mixing memory types within a population</li>
                 <li><strong>Communication</strong>: Adding cheap-talk channels between agents</li>
                 <li><strong>Other games</strong>: Prisoner's dilemma, ultimatum game, negotiation scenarios</li>
@@ -612,5 +657,6 @@
             </p>
         </div>
     </footer>
+
 </body>
 </html>

@@ -4,6 +4,7 @@ from memory.full_history import FullHistoryMemory
 from memory.summary_memory import SummaryMemory
 from memory.structured_memory import StructuredMemory
 from memory.hybrid_memory import HybridMemory
+from memory.hybrid_neutral_memory import HybridNeutralMemory
 
 MEMORY_REGISTRY: dict[str, type[BaseMemory]] = {
     "none": NoMemory,
@@ -11,6 +12,7 @@ MEMORY_REGISTRY: dict[str, type[BaseMemory]] = {
     "summary": SummaryMemory,
     "structured": StructuredMemory,
     "hybrid": HybridMemory,
+    "hybrid_neutral": HybridNeutralMemory,
 }
 
 
@@ -29,6 +31,7 @@ __all__ = [
     "SummaryMemory",
     "StructuredMemory",
     "HybridMemory",
+    "HybridNeutralMemory",
     "MEMORY_REGISTRY",
     "create_memory",
 ]

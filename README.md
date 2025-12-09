@@ -25,7 +25,8 @@ This project investigates how different memory representations affect cooperatio
 1. **Hybrid achieves theoretical maximum welfare** (240) through perfect cooperation
 2. **Full history provides NO benefit** over no memory (identical welfare)
 3. **The strategy note is the critical component** — trust table alone doesn't help
-4. **Effect is robust** across different multiplier values (α = 1.5, 1.8, 2.1)
+4. **Cooperative priming is necessary** — neutral strategy note (~124 welfare) performs like baseline (~120)
+5. **Effect is robust** across different multiplier values (α = 1.5, 1.8, 2.1)
 
 ## Project Structure
 
@@ -158,6 +159,7 @@ After running experiments, the `results/` directory contains:
 - `none.json`, `full_history.json`, `summary.json`, `structured.json`, `hybrid.json` — Main experiments
 - `ablation_*.json` — Ablation comparing none vs structured vs hybrid
 - `sweep_alpha*_*.json` — Alpha sweep for robustness testing
+- `neutral_ablation_*.json` — Neutral note ablation (none vs hybrid vs hybrid_neutral)
 - `summary_metrics.json` — Computed metrics for all conditions
 
 ## License
