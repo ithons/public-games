@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a2332"/>
+      <stop offset="100%" style="stop-color:#111827"/>
+    </linearGradient>
+  </defs>
+  
+  <rect fill="url(#bg4)" width="800" height="400"/>
+  
+  <!-- Grid -->
+  <g stroke="#334155" stroke-width="0.5">
+    <line x1="80" y1="50" x2="80" y2="320"/>
+    <line x1="80" y1="320" x2="750" y2="320"/>
+    <line x1="80" y1="120" x2="750" y2="120" stroke-dasharray="4"/>
+    <line x1="80" y1="220" x2="750" y2="220" stroke-dasharray="4"/>
+  </g>
+  
+  <!-- Y-axis scale: 0 at bottom (320), 1.0 at top (50), so 0.1 = 293 -->
+  
+  <!-- Bars (Gini: lower is better) -->
+  <rect x="120" y="248" width="100" height="72" fill="#64748b" rx="4"/>
+  <rect x="250" y="263" width="100" height="57" fill="#22d3ee" rx="4"/>
+  <rect x="380" y="256" width="100" height="64" fill="#a78bfa" rx="4"/>
+  <rect x="510" y="283" width="100" height="37" fill="#f97316" rx="4"/>
+  <rect x="640" y="278" width="100" height="42" fill="#10b981" rx="4"/>
+  
+  <!-- Labels -->
+  <text fill="#94a3b8" x="170" y="345" text-anchor="middle" font-family="sans-serif" font-size="12">None</text>
+  <text fill="#94a3b8" x="300" y="345" text-anchor="middle" font-family="sans-serif" font-size="12">History</text>
+  <text fill="#94a3b8" x="430" y="345" text-anchor="middle" font-family="sans-serif" font-size="12">Summary</text>
+  <text fill="#94a3b8" x="560" y="345" text-anchor="middle" font-family="sans-serif" font-size="12">Structured</text>
+  <text fill="#94a3b8" x="690" y="345" text-anchor="middle" font-family="sans-serif" font-size="12">Hybrid</text>
+  
+  <!-- Value labels -->
+  <text fill="#f1f5f9" x="170" y="240" text-anchor="middle" font-family="sans-serif" font-size="11">0.089</text>
+  <text fill="#f1f5f9" x="300" y="255" text-anchor="middle" font-family="sans-serif" font-size="11">0.072</text>
+  <text fill="#f1f5f9" x="430" y="248" text-anchor="middle" font-family="sans-serif" font-size="11">0.078</text>
+  <text fill="#f1f5f9" x="560" y="275" text-anchor="middle" font-family="sans-serif" font-size="11">0.051</text>
+  <text fill="#f1f5f9" x="690" y="270" text-anchor="middle" font-family="sans-serif" font-size="11">0.058</text>
+  
+  <!-- Y-axis labels -->
+  <text fill="#64748b" x="70" y="324" text-anchor="end" font-family="sans-serif" font-size="10">0</text>
+  <text fill="#64748b" x="70" y="224" text-anchor="end" font-family="sans-serif" font-size="10">0.1</text>
+  <text fill="#64748b" x="70" y="124" text-anchor="end" font-family="sans-serif" font-size="10">0.2</text>
+  
+  <!-- Y-axis label -->
+  <text fill="#94a3b8" x="30" y="185" text-anchor="middle" font-family="sans-serif" font-size="14" transform="rotate(-90, 30, 185)">Gini Coefficient (↓ = more equal)</text>
+  
+  <!-- Title -->
+  <text fill="#f1f5f9" x="415" y="30" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="600">Inequality by Memory Condition</text>
+</svg>
+

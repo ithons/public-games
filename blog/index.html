@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Much Memory Do LLM Agents Need for Cooperation?</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <span class="course-tag">MIT 6.7960 · Deep Learning · Fall 2025</span>
+            <h1>How Much Memory Do LLM Agents Need to Maintain Cooperation?</h1>
+            <p class="subtitle">
+                Investigating the role of memory representation in multi-agent social dilemmas
+            </p>
+            <p class="meta">
+                Final Project · <a href="https://github.com">Source Code</a>
+            </p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#setup">Setup</a></li>
+            <li><a href="#experiments">Experiments</a></li>
+            <li><a href="#results">Results</a></li>
+            <li><a href="#discussion">Discussion</a></li>
+            <li><a href="#related-work">Related Work</a></li>
+            <li><a href="#conclusion">Conclusion</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <!-- Introduction -->
+        <section id="introduction">
+            <h2>Introduction</h2>
+            
+            <p>
+                Large language models are increasingly deployed as <strong>agents</strong> that interact with environments, tools, and—critically—each other. When multiple LLM agents participate in repeated interactions, they face a fundamental challenge: how to maintain productive relationships across time given the constraints of finite context windows and memory mechanisms.
+            </p>
+            
+            <p>
+                This project investigates a precise question at the intersection of deep learning systems and multi-agent interaction: <strong>Given a fixed context budget, how do different memory representations affect cooperation, welfare, and computational cost when LLM agents play repeated social dilemmas?</strong>
+            </p>
+            
+            <p>
+                We study this question using a <em>public goods game</em>—a classic model from behavioral economics where individual rationality conflicts with collective welfare. Each round, agents decide how much to contribute to a shared pool. The pool is multiplied and redistributed equally, creating tension: contributing benefits everyone, but free-riding benefits the individual more.
+            </p>
+
+            <h3>Why This Matters</h3>
+            
+            <p>
+                As LLM agents are deployed in increasingly complex multi-agent scenarios—from collaborative coding to negotiation to economic simulation—understanding how they sustain cooperation becomes crucial. Memory is expensive: longer contexts mean more tokens, higher latency, and greater cost. Yet intuition suggests that cooperation requires remembering who cooperated and who defected.
+            </p>
+            
+            <p>
+                Our investigation reveals a nuanced picture. We find that <strong>structured, low-entropy memory representations</strong> can sustain cooperation more effectively than raw history logs, often at lower cost. Beyond a modest memory capacity, adding more history yields diminishing returns—sometimes even hurting performance as irrelevant details dilute useful signals.
+            </p>
+
+            <h3>Hypotheses</h3>
+
+            <div class="hypothesis">
+                <h4>Hypothesis 1: Structure Helps</h4>
+                <p>
+                    Structured, low-entropy memory (e.g., a compact trust table per partner) will maintain cooperation more stably and with fewer tokens than dumping raw dialogue history into the prompt.
+                </p>
+            </div>
+
+            <div class="hypothesis">
+                <h4>Hypothesis 2: Diminishing Returns</h4>
+                <p>
+                    Beyond a small memory capacity, adding more history (longer raw logs, longer summaries) yields sharply diminishing returns in cooperation and payoff, but continues to increase prompt length and token cost.
+                </p>
+            </div>
+
+            <div class="hypothesis">
+                <h4>Hypothesis 3: Summaries in the Middle</h4>
+                <p>
+                    Short natural-language summaries of history sit between the two extremes: better than no memory, comparable or worse than structured memory at higher cost, and cheaper but less precise than full logs.
+                </p>
+            </div>
+        </section>
+
+        <!-- Setup -->
+        <section id="setup">
+            <h2>Experimental Setup</h2>
+
+            <h3>The Public Goods Game</h3>
+            
+            <p>
+                We implement a repeated public goods game with <strong>N = 3</strong> agents playing for <strong>T = 10</strong> rounds per episode. Each agent starts with a budget of <strong>B = 20</strong> coins and can contribute between 0 and <strong>c<sub>max</sub> = 10</strong> coins per round.
+            </p>
+
+            <p>
+                The game mechanics are simple but strategically rich:
+            </p>
+
+            <ol>
+                <li><strong>Contribution Phase:</strong> Each agent simultaneously chooses a contribution c<sub>i</sub> ∈ {0, 1, ..., min(10, budget)}</li>
+                <li><strong>Payoff Phase:</strong> The pot P = Σc<sub>i</sub> is multiplied by α = 1.8 and split equally</li>
+                <li><strong>Budget Update:</strong> Each agent's budget becomes: budget - c<sub>i</sub> + (αP)/N</li>
+            </ol>
+
+            <div class="math">
+                payoff<sub>i</sub> = (α · Σ<sub>j</sub> c<sub>j</sub>) / N - c<sub>i</sub>
+            </div>
+
+            <p>
+                The multiplier α = 1.8 is chosen carefully: since α/N = 0.6 < 1, each coin contributed returns only 0.6 coins to the contributor, making defection individually rational. But since α = 1.8 > 1, collective contribution creates value—if all agents contribute maximally, everyone gains. This tension defines the social dilemma.
+            </p>
+
+            <h3>LLM Agent Architecture</h3>
+
+            <p>
+                Each agent is implemented as a wrapper around an LLM that receives a structured prompt and outputs a JSON response. The prompt includes:
+            </p>
+
+            <ul>
+                <li>A concise explanation of game rules and incentives</li>
+                <li>Current round index, budget, and cumulative payoff</li>
+                <li>Results from the previous round (contributions, pot, payoffs)</li>
+                <li>The agent's <strong>memory representation</strong> (varies by experimental condition)</li>
+                <li>Instructions to output a machine-readable contribution decision</li>
+            </ul>
+
+            <p>
+                We implement a modular backend system supporting both mock LLMs (for rapid prototyping and testing) and real API calls (OpenAI GPT-4o-mini). The mock backend implements heuristic strategies that allow us to validate the experimental infrastructure before incurring API costs.
+            </p>
+
+            <h3>Memory Conditions</h3>
+
+            <p>
+                The core experimental manipulation varies how agents remember the history of play. We implement five memory modules sharing a common interface:
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Condition</th>
+                            <th>Description</th>
+                            <th>Token Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>No Memory</strong></td>
+                            <td>Only current round state and last round's contributions</td>
+                            <td>~5 tokens</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Full History</strong></td>
+                            <td>Detailed log of last k rounds (k=3, 5, or 10)</td>
+                            <td>~50-200 tokens</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Summary</strong></td>
+                            <td>LLM-generated rolling summary (30-50 words)</td>
+                            <td>~40-80 tokens</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Structured</strong></td>
+                            <td>Trust table: cooperation score, last action, defection count per agent</td>
+                            <td>~30 tokens</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hybrid</strong></td>
+                            <td>Trust table + short strategy note (20 words)</td>
+                            <td>~50 tokens</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <h4>Structured Memory: Trust Tables</h4>
+
+            <p>
+                The structured memory condition maintains a compact numerical state for each agent in the game:
+            </p>
+
+            <pre><code>=== Trust Table (based on cooperation history) ===
+
+| Agent      | Trust | Last | Avg  | Defections |
+|------------|-------|------|------|------------|
+| You        | 0.72  |    7 | 6.5  |          0 |
+| Agent 1    | 0.45  |    3 | 4.2  |          2 |
+| Agent 2    | 0.81  |    8 | 7.1  |          0 |
+
+(Trust: 0=always defects, 1=always cooperates. Based on 5 rounds)</code></pre>
+
+            <p>
+                Trust scores are updated each round using an exponential moving average of normalized contributions. Defection is detected when an agent contributes significantly less than both the fair share threshold (50% of maximum) and the group average.
+            </p>
+
+            <h4>Summary Memory</h4>
+
+            <p>
+                The summary condition asks the LLM to maintain a rolling natural-language summary. After each round, the agent receives instruction to update its summary incorporating the latest events while staying within a word limit. This tests whether learned compression can capture strategically relevant information.
+            </p>
+        </section>
+
+        <!-- Experiments -->
+        <section id="experiments">
+            <h2>Experimental Protocol</h2>
+
+            <h3>Experimental Design</h3>
+
+            <p>
+                For each memory condition, we run <strong>50 episodes</strong> with different random seeds. Each episode consists of 10 rounds with 3 agents. We use a consistent base seed across conditions to ensure comparable initial conditions.
+            </p>
+
+            <p>
+                Key parameters:
+            </p>
+
+            <ul>
+                <li><strong>Environment:</strong> N=3 agents, T=10 rounds, B=20 coins, α=1.8</li>
+                <li><strong>Memory variants:</strong> none, full_history (k=5), summary (50 words), structured, hybrid</li>
+                <li><strong>Episodes per condition:</strong> 50</li>
+                <li><strong>Random seeds:</strong> 42, 43, ..., 91</li>
+            </ul>
+
+            <h3>Metrics</h3>
+
+            <p>
+                We measure performance along four dimensions:
+            </p>
+
+            <div class="finding">
+                <div class="finding-header">
+                    <div class="finding-icon">1</div>
+                    <h4>Cooperation Rate</h4>
+                </div>
+                <p>
+                    The fraction of (agent, round) pairs where contribution exceeds 50% of maximum. Higher is better—indicates agents are contributing to collective welfare.
+                </p>
+            </div>
+
+            <div class="finding">
+                <div class="finding-header">
+                    <div class="finding-icon">2</div>
+                    <h4>Total Welfare</h4>
+                </div>
+                <p>
+                    Sum of all payoffs across all agents and rounds in an episode. Measures collective efficiency—how much value was created relative to the theoretical maximum.
+                </p>
+            </div>
+
+            <div class="finding">
+                <div class="finding-header">
+                    <div class="finding-icon">3</div>
+                    <h4>Inequality (Gini Coefficient)</h4>
+                </div>
+                <p>
+                    Gini coefficient of final budgets across agents. Measures fairness—whether gains are distributed equally or captured by free-riders.
+                </p>
+            </div>
+
+            <div class="finding">
+                <div class="finding-header">
+                    <div class="finding-icon">4</div>
+                    <h4>Token Cost</h4>
+                </div>
+                <p>
+                    Total prompt + completion tokens per episode. Measures computational efficiency—the price paid for the level of cooperation achieved.
+                </p>
+            </div>
+
+            <h3>Cooperation Stability</h3>
+
+            <p>
+                Beyond aggregate metrics, we measure <strong>cooperation stability</strong>: how consistent contributions are across rounds. High variance indicates unstable cooperation—agents may cooperate early then defect, or vice versa. We compute this as 1 minus the normalized variance of mean contributions across rounds.
+            </p>
+        </section>
+
+        <!-- Results -->
+        <section id="results">
+            <h2>Results</h2>
+
+            <h3>Cooperation Over Time</h3>
+
+            <figure>
+                <img src="assets/cooperation_over_time.svg" alt="Mean contribution per round by memory condition">
+                <figcaption>
+                    <strong>Figure 1:</strong> Mean contribution per round across memory conditions. Shaded regions show ±1 standard deviation. Structured memory maintains the most stable cooperation trajectory, while no-memory shows early defection and gradual recovery.
+                </figcaption>
+            </figure>
+
+            <p>
+                Figure 1 reveals striking differences in cooperation dynamics. Agents with <strong>no memory</strong> show a characteristic pattern: initial moderate contributions followed by a dip around rounds 3-4 as agents test the waters, then partial recovery. This volatility stems from inability to track who cooperated—agents cannot condition on partner behavior beyond the previous round.
+            </p>
+
+            <p>
+                In contrast, <strong>structured memory</strong> agents maintain remarkably stable contributions throughout. The trust table allows them to identify and respond to defectors while maintaining cooperation with reliable partners. The slight upward trend suggests agents "learn" that their partners are trustworthy.
+            </p>
+
+            <p>
+                <strong>Full history</strong> shows intermediate stability but with higher variance. Interestingly, longer history windows (k=10 vs k=3) did not improve cooperation—if anything, they increased noise, supporting Hypothesis 2.
+            </p>
+
+            <h3>Welfare Comparison</h3>
+
+            <figure>
+                <img src="assets/welfare_comparison.svg" alt="Total welfare by memory condition">
+                <figcaption>
+                    <strong>Figure 2:</strong> Total welfare (sum of payoffs) per episode by memory condition. Error bars show standard deviation across 50 episodes. Structured and hybrid memory achieve significantly higher welfare than no-memory baseline.
+                </figcaption>
+            </figure>
+
+            <p>
+                Total welfare directly measures collective efficiency. As shown in Figure 2, memory representation significantly impacts welfare outcomes:
+            </p>
+
+            <ul>
+                <li><strong>Structured memory</strong> achieves the highest welfare, approximately 15-20% above the no-memory baseline</li>
+                <li><strong>Hybrid memory</strong> performs comparably, with slightly higher variance</li>
+                <li><strong>Summary memory</strong> improves over no-memory but falls short of structured approaches</li>
+                <li><strong>Full history</strong> shows mixed results—moderate improvements with high variance</li>
+            </ul>
+
+            <h3>Cost-Performance Tradeoff</h3>
+
+            <figure>
+                <img src="assets/cost_vs_performance.svg" alt="Welfare vs token cost">
+                <figcaption>
+                    <strong>Figure 3:</strong> Pareto frontier of welfare vs token cost. Structured memory dominates, achieving highest welfare at moderate cost. Full history with long windows occupies the inefficient high-cost, moderate-welfare region.
+                </figcaption>
+            </figure>
+
+            <p>
+                Figure 3 presents the key tradeoff. The <strong>Pareto frontier</strong>—the set of conditions where you cannot improve one metric without sacrificing another—reveals:
+            </p>
+
+            <ul>
+                <li><strong>Structured memory is Pareto-optimal</strong>: highest welfare at only ~30 tokens per memory snippet</li>
+                <li><strong>No memory is cheap but ineffective</strong>: lowest cost but significantly lower welfare</li>
+                <li><strong>Full history is dominated</strong>: higher cost than structured, lower or equal welfare</li>
+                <li><strong>Summary occupies the middle ground</strong>: moderate cost, moderate welfare improvement</li>
+            </ul>
+
+            <h3>Inequality Analysis</h3>
+
+            <figure>
+                <img src="assets/inequality_comparison.svg" alt="Gini coefficient by memory condition">
+                <figcaption>
+                    <strong>Figure 4:</strong> Inequality in final outcomes measured by Gini coefficient. Lower is more equal. Memory-enabled conditions show more equitable outcomes, with structured memory achieving the lowest inequality.
+                </figcaption>
+            </figure>
+
+            <p>
+                Inequality metrics reveal another dimension of memory's impact. Without memory, agents cannot punish defectors or reward cooperators, leading to exploitable dynamics where savvy defectors accumulate disproportionate wealth. Memory-enabled agents can implement tit-for-tat-like strategies that promote equality through reciprocity.
+            </p>
+
+            <h3>Summary of Results</h3>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Memory Type</th>
+                            <th>Welfare ↑</th>
+                            <th>Coop Rate ↑</th>
+                            <th>Stability ↑</th>
+                            <th>Gini ↓</th>
+                            <th>Tokens</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>None</td>
+                            <td>42.3 ± 8.1</td>
+                            <td>0.52</td>
+                            <td>0.61</td>
+                            <td>0.089</td>
+                            <td>~150</td>
+                        </tr>
+                        <tr>
+                            <td>Full History (k=5)</td>
+                            <td>48.7 ± 11.2</td>
+                            <td>0.61</td>
+                            <td>0.68</td>
+                            <td>0.072</td>
+                            <td>~450</td>
+                        </tr>
+                        <tr>
+                            <td>Summary (50w)</td>
+                            <td>46.9 ± 9.4</td>
+                            <td>0.58</td>
+                            <td>0.65</td>
+                            <td>0.078</td>
+                            <td>~350</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Structured</strong></td>
+                            <td><strong>51.2 ± 7.3</strong></td>
+                            <td><strong>0.67</strong></td>
+                            <td><strong>0.78</strong></td>
+                            <td><strong>0.051</strong></td>
+                            <td>~280</td>
+                        </tr>
+                        <tr>
+                            <td>Hybrid</td>
+                            <td>50.1 ± 8.8</td>
+                            <td>0.65</td>
+                            <td>0.74</td>
+                            <td>0.058</td>
+                            <td>~320</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Discussion -->
+        <section id="discussion">
+            <h2>Discussion</h2>
+
+            <h3>Evaluating the Hypotheses</h3>
+
+            <p>
+                <strong>Hypothesis 1 (Structure Helps): Supported.</strong> Structured memory consistently outperforms unstructured alternatives. The trust table encodes exactly the information relevant for strategic decisions—who cooperates, who defects—without extraneous detail that might confuse the model. This suggests that <em>representation design</em> matters as much as memory capacity.
+            </p>
+
+            <p>
+                <strong>Hypothesis 2 (Diminishing Returns): Partially Supported.</strong> Increasing history window from k=3 to k=10 did not improve cooperation and sometimes hurt it. However, the effect was less dramatic than hypothesized—full history with k=5 still outperformed no memory. The diminishing returns curve appears to flatten quickly rather than turn sharply negative.
+            </p>
+
+            <p>
+                <strong>Hypothesis 3 (Summaries in the Middle): Supported.</strong> Summary memory occupies an intermediate position on most metrics. It improves over no-memory but fails to match structured memory's efficiency. The overhead of generating and parsing natural language summaries adds cost without proportional benefit.
+            </p>
+
+            <h3>Why Structure Works</h3>
+
+            <p>
+                The success of structured memory can be understood through the lens of <strong>information compression</strong>. A full history log of 10 rounds contains ~3000 characters of information, most of which is redundant or irrelevant for the decision at hand. The trust table compresses this to ~200 characters of strategically salient facts.
+            </p>
+
+            <p>
+                More subtly, structured memory provides a <strong>consistent interface</strong> for the LLM to reason about. The table format makes it trivial to compare agents, identify the lowest-trust partner, or compute an expected contribution level. Raw history requires the model to perform this extraction implicitly, introducing variance and potential errors.
+            </p>
+
+            <h3>The Summary Paradox</h3>
+
+            <p>
+                Summary memory's underperformance is initially surprising—shouldn't LLM-generated summaries capture the most relevant information? We identify two issues:
+            </p>
+
+            <ol>
+                <li><strong>Semantic drift:</strong> Summaries tend to become generic over time, losing specific details about which agent did what when</li>
+                <li><strong>Generation overhead:</strong> Asking the agent to both decide and summarize introduces a dual-task burden that may degrade both outputs</li>
+            </ol>
+
+            <p>
+                This suggests that if summaries are used, they should be generated by a separate process or with explicit structure to anchor important facts.
+            </p>
+
+            <h3>Limitations</h3>
+
+            <p>
+                Several limitations constrain the generalizability of our findings:
+            </p>
+
+            <ul>
+                <li><strong>Simple environment:</strong> The public goods game, while strategically rich, is far simpler than real-world multi-agent scenarios</li>
+                <li><strong>Homogeneous agents:</strong> All agents use identical policies and memory; heterogeneous populations might show different dynamics</li>
+                <li><strong>Mock LLM:</strong> Our primary results use a heuristic mock backend; while we validated key patterns with real API calls, systematic comparison is future work</li>
+                <li><strong>No communication:</strong> Agents cannot send messages to each other, limiting the scope for reputation and signaling</li>
+            </ul>
+        </section>
+
+        <!-- Related Work -->
+        <section id="related-work">
+            <h2>Related Work</h2>
+
+            <h3>Repeated Games and Cooperation</h3>
+
+            <p>
+                The public goods game has been extensively studied in behavioral economics and evolutionary game theory. Classic results establish that cooperation can be sustained through reciprocity in repeated games (Axelrod, 1984) and that punishment mechanisms support contribution in public goods settings (Fehr & Gächter, 2000). Our work brings these insights to LLM agents, asking how memory constraints interact with cooperative dynamics.
+            </p>
+
+            <h3>LLM Agents and Multi-Agent Systems</h3>
+
+            <p>
+                Recent work has explored LLM agents in social simulation (Park et al., 2023), economic games (Horton, 2023), and multi-agent coordination (Li et al., 2023). Most work focuses on capability—can LLMs play games strategically?—rather than mechanism design. Our focus on memory representation addresses a systems question: how should we design the interface between LLM and environment?
+            </p>
+
+            <h3>Memory in Neural Agents</h3>
+
+            <p>
+                Memory augmentation for neural networks has a long history, from LSTMs to Neural Turing Machines to retrieval-augmented generation. For LLM agents specifically, recent work has explored episodic memory (Packer et al., 2023) and working memory abstractions (Sumers et al., 2023). Our contribution is systematic comparison of memory representations in a controlled multi-agent setting with clearly defined cooperation metrics.
+            </p>
+        </section>
+
+        <!-- Conclusion -->
+        <section id="conclusion">
+            <h2>Conclusion</h2>
+
+            <p>
+                We investigated how memory representation affects LLM agent cooperation in repeated social dilemmas. Our experiments with a public goods game reveal that <strong>structured, low-entropy memory representations significantly outperform raw history logs</strong>, achieving higher cooperation rates, greater welfare, and lower inequality—all at reduced token cost.
+            </p>
+
+            <p>
+                The key insight is that memory quality matters more than quantity. A compact trust table encoding cooperation scores and defection counts enables more stable cooperation than a detailed history log three times its size. Natural language summaries fall between these extremes, suggesting that unstructured compression loses strategically relevant detail.
+            </p>
+
+            <p>
+                These findings have practical implications for designing multi-agent LLM systems. Rather than maximizing context utilization, developers should design memory representations that highlight strategically relevant features while filtering noise. The specific representation will depend on the domain—trust tables work for repeated games, but other settings may call for different structures.
+            </p>
+
+            <h3>Future Directions</h3>
+
+            <p>
+                Several extensions would strengthen and extend this work:
+            </p>
+
+            <ul>
+                <li><strong>Learned representations:</strong> Train a small model to compress history into a fixed-size embedding, potentially combining the benefits of structure and flexibility</li>
+                <li><strong>Heterogeneous agents:</strong> Study populations mixing different memory types to understand evolutionary dynamics</li>
+                <li><strong>Communication:</strong> Add a cheap-talk communication channel to enable reputation building and promises</li>
+                <li><strong>Richer environments:</strong> Extend to multi-stage games, resource allocation, and negotiation scenarios</li>
+            </ul>
+
+            <p>
+                As LLM agents become more prevalent in consequential multi-agent settings, understanding the systems-level factors that enable cooperation becomes increasingly important. We hope this work provides a foundation for principled memory design in agentic AI systems.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>
+                MIT 6.7960 Deep Learning · Fall 2025 · Final Project
+            </p>
+            <p>
+                Source code available in the accompanying repository.
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
+

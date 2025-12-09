@@ -1,0 +1,59 @@
+# Default experiment configuration
+# Public Goods Game with LLM Agents
+
+environment:
+  num_agents: 3
+  num_rounds: 10
+  starting_budget: 20.0
+  max_contribution: 10
+  multiplier: 1.8  # Must be in (1, num_agents) for social dilemma
+
+experiment:
+  num_episodes: 50
+  base_seed: 42
+  
+  # Memory conditions to run
+  memory_conditions:
+    - type: none
+      kwargs: {}
+    
+    - type: full_history
+      kwargs:
+        window_size: 3
+    
+    - type: full_history
+      kwargs:
+        window_size: 5
+    
+    - type: full_history
+      kwargs:
+        window_size: 10
+    
+    - type: summary
+      kwargs:
+        max_words: 30
+    
+    - type: summary
+      kwargs:
+        max_words: 50
+    
+    - type: structured
+      kwargs:
+        fair_share_fraction: 0.5
+    
+    - type: hybrid
+      kwargs:
+        max_note_words: 20
+        fair_share_fraction: 0.5
+
+llm:
+  use_real_llm: false  # Set to true for actual API calls
+  model: gpt-4o-mini
+  temperature: 0.7
+  mock_strategy: cooperative  # For mock backend: cooperative, defector, tit_for_tat
+
+output:
+  results_dir: results
+  save_raw_logs: true
+  generate_plots: true
+
