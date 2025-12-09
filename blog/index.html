@@ -57,7 +57,11 @@
             </p>
             
             <p>
-                The experiments reveal a striking result: <strong>hybrid memory combining a structured trust table with a strategy note enables perfect cooperation</strong>, achieving exactly 2× the welfare of all other conditions (240 vs ~120). While GPT-4o-mini agents maintain moderate cooperation (~5/10 contributions) without memory, only the hybrid representation unlocks full cooperation (10/10). This suggests that memory design matters not just for information retention, but for strategic reasoning.
+                The experiments reveal a clear result: <strong>hybrid memory combining a structured trust table with a strategy note enables perfect cooperation</strong>, achieving exactly 2× the welfare of all other conditions (240 vs ~120). While GPT-4o-mini agents maintain moderate cooperation (~5/10 contributions) without memory, only the hybrid representation unlocks full cooperation (10/10). This suggests that memory design matters not just for information retention, but for strategic reasoning.
+            </p>
+
+            <p>
+                Prior work on LLM agent memory typically extends context windows or uses retrieval mechanisms. This project takes a different approach: holding the model and environment fixed, I show that a 20-word strategy note can change agent behavior more than thousands of extra tokens of raw history.
             </p>
 
             <h3>Hypotheses</h3>
@@ -262,7 +266,7 @@
             </figure>
 
             <p>
-                Figure 1 shows the most striking finding: <strong>hybrid memory achieves and maintains perfect cooperation (contribution = 10) from round 1</strong>, while all other conditions settle into moderate cooperation around 5 (50% of maximum). Notably:
+                Figure 1 shows a key finding: <strong>hybrid memory achieves and maintains perfect cooperation (contribution = 10) from round 1</strong>, while all other conditions settle into moderate cooperation around 5 (50% of maximum). Notably:
             </p>
 
             <ul>
@@ -392,7 +396,7 @@
             <h2>Hybrid vs Structured: Ablation Analysis</h2>
 
             <p>
-                The dramatic success of hybrid memory raises a question: <strong>which component drives the effect—the trust table, the strategy note, or their combination?</strong>
+                The strong success of hybrid memory raises a question: <strong>which component drives the effect—the trust table, the strategy note, or their combination?</strong>
             </p>
 
             <p>
@@ -466,7 +470,7 @@
             </ul>
 
             <p>
-                <strong>Hybrid consistently achieves the theoretical maximum</strong> (full cooperation) regardless of α, while non-hybrid conditions maintain the same moderate cooperation pattern across all parameter values.
+                <strong>Hybrid stays at or very close to the theoretical maximum</strong> (full cooperation) regardless of α, while non-hybrid conditions maintain the same moderate cooperation pattern across all parameter values.
             </p>
         </section>
 
@@ -488,10 +492,14 @@
                 <strong>Hypothesis 3 (Summaries in the Middle): Partially Supported.</strong> Summary memory achieves marginally higher welfare (124 vs 120) at moderate cost (~13,600 tokens). However, the improvement is small (+3%) compared to hybrid's +100%.
             </p>
 
+            <p>
+                In summary: structure alone is not enough (hypothesis 1 only partially holds), raw history is a poor cost-performance tradeoff (hypothesis 2 strongly supported), and summaries provide a mild upgrade over baseline but fall far short of hybrid's effect (hypothesis 3 partially supported with small effect size).
+            </p>
+
             <h3>The Strategy Note Effect</h3>
 
             <p>
-                The most striking finding is that <strong>hybrid memory's success comes from the strategy note, not the trust table</strong>. This suggests that effective LLM agent memory requires prompting the model to engage in explicit strategic reasoning.
+                The key finding is that <strong>hybrid memory's success comes from the strategy note, not the trust table</strong>. This suggests that effective LLM agent memory requires prompting the model to engage in explicit strategic reasoning.
             </p>
 
             <p>
@@ -562,7 +570,7 @@
 
             <ol>
                 <li><strong>Hybrid memory achieves 2× welfare</strong> (240 vs ~120) by enabling perfect cooperation</li>
-                <li><strong>Non-hybrid conditions are indistinguishable</strong>—full history, summary, and structured memory all perform similarly to no memory</li>
+                <li><strong>Non-hybrid conditions cluster tightly near baseline</strong>—full history, summary, and structured memory differ from no memory by only a few percent</li>
                 <li><strong>The strategy note is the key component</strong>—the trust table alone does not change behavior</li>
                 <li><strong>The effect is robust</strong> across different multiplier values (α = 1.5, 1.8, 2.1)</li>
             </ol>
