@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>How Much Memory Do LLM Agents Need for Cooperation?</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@600;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -59,7 +56,7 @@
             </p>
             
             <p>
-                Our investigation reveals a nuanced picture. We find that <strong>structured, low-entropy memory representations</strong> can sustain cooperation more effectively than raw history logs, often at lower cost. Beyond a modest memory capacity, adding more history yields diminishing returns—sometimes even hurting performance as irrelevant details dilute useful signals.
+                Our investigation reveals a striking result. We find that <strong>hybrid memory combining structured trust tables with strategy notes</strong> enables full cooperation, achieving 2x the welfare of other conditions. While GPT-4o-mini agents naturally maintain moderate cooperation even without memory, the hybrid representation unlocks emergent coordination—suggesting that memory design matters not just for information retention, but for strategic reasoning.
             </p>
 
             <h3>Hypotheses</h3>
@@ -211,7 +208,7 @@
             <h3>Experimental Design</h3>
 
             <p>
-                For each memory condition, we run <strong>50 episodes</strong> with different random seeds. Each episode consists of 10 rounds with 3 agents. We use a consistent base seed across conditions to ensure comparable initial conditions.
+                For each memory condition, we run <strong>15 episodes</strong> with different random seeds using GPT-4o-mini. Each episode consists of 10 rounds with 3 agents. We use a consistent base seed across conditions to ensure comparable initial conditions.
             </p>
 
             <p>
@@ -221,8 +218,9 @@
             <ul>
                 <li><strong>Environment:</strong> N=3 agents, T=10 rounds, B=20 coins, α=1.8</li>
                 <li><strong>Memory variants:</strong> none, full_history (k=5), summary (50 words), structured, hybrid</li>
-                <li><strong>Episodes per condition:</strong> 50</li>
-                <li><strong>Random seeds:</strong> 42, 43, ..., 91</li>
+                <li><strong>Episodes per condition:</strong> 15</li>
+                <li><strong>LLM:</strong> GPT-4o-mini (temperature=0.7)</li>
+                <li><strong>Random seeds:</strong> 42, 43, ..., 56</li>
             </ul>
 
             <h3>Metrics</h3>
@@ -287,20 +285,20 @@
             <figure>
                 <img src="assets/cooperation_over_time.png" alt="Mean contribution per round by memory condition">
                 <figcaption>
-                    <strong>Figure 1:</strong> Mean contribution per round across memory conditions. Shaded regions show ±1 standard deviation. Structured memory maintains the most stable cooperation trajectory, while no-memory shows early defection and gradual recovery.
+                    <strong>Figure 1:</strong> Mean contribution per round across memory conditions. Shaded regions show ±1 standard deviation. The most striking result: hybrid memory achieves full cooperation (10/10) consistently, while other conditions stabilize around moderate cooperation (~5/10).
                 </figcaption>
             </figure>
 
             <p>
-                Figure 1 reveals striking differences in cooperation dynamics. Agents with <strong>no memory</strong> show a characteristic pattern: initial moderate contributions followed by a dip around rounds 3-4 as agents test the waters, then partial recovery. This volatility stems from inability to track who cooperated—agents cannot condition on partner behavior beyond the previous round.
+                Figure 1 reveals a surprising finding: GPT-4o-mini agents naturally settle into stable, moderate cooperation across most memory conditions, with contributions averaging around 5 (50% of maximum). This represents a compromise between the Nash equilibrium (contribute 0) and social optimum (contribute 10).
             </p>
 
             <p>
-                In contrast, <strong>structured memory</strong> agents maintain remarkably stable contributions throughout. The trust table allows them to identify and respond to defectors while maintaining cooperation with reliable partners. The slight upward trend suggests agents "learn" that their partners are trustworthy.
+                The standout result is <strong>hybrid memory</strong>, which achieves perfect cooperation—all agents contribute the maximum (10) every round. The combination of structured trust table and strategy note appears to provide exactly the right scaffolding for agents to coordinate on mutual cooperation.
             </p>
 
             <p>
-                <strong>Full history</strong> shows intermediate stability but with higher variance. Interestingly, longer history windows (k=10 vs k=3) did not improve cooperation—if anything, they increased noise, supporting Hypothesis 2.
+                Other conditions show subtle differences: <strong>structured memory</strong> shows a slight upward trend (5.0 → 5.3 over rounds), suggesting agents gradually build trust through the explicit cooperation scores. <strong>Summary</strong> and <strong>full history</strong> show similar patterns to the no-memory baseline, indicating that simply adding more context does not automatically improve coordination.
             </p>
 
             <h3>Welfare Comparison</h3>
@@ -308,19 +306,19 @@
             <figure>
                 <img src="assets/welfare_comparison.png" alt="Total welfare by memory condition">
                 <figcaption>
-                    <strong>Figure 2:</strong> Total welfare (sum of payoffs) per episode by memory condition. Error bars show standard deviation across 50 episodes. Structured and hybrid memory achieve significantly higher welfare than no-memory baseline.
+                    <strong>Figure 2:</strong> Total welfare (sum of payoffs) per episode by memory condition. Error bars show standard deviation across 15 episodes. Hybrid memory achieves dramatically higher welfare (240) compared to other conditions (~120).
                 </figcaption>
             </figure>
 
             <p>
-                Total welfare directly measures collective efficiency. As shown in Figure 2, memory representation significantly impacts welfare outcomes:
+                Total welfare directly measures collective efficiency. As shown in Figure 2, memory representation dramatically impacts welfare outcomes:
             </p>
 
             <ul>
-                <li><strong>Structured memory</strong> achieves the highest welfare, approximately 15-20% above the no-memory baseline</li>
-                <li><strong>Hybrid memory</strong> performs comparably, with slightly higher variance</li>
-                <li><strong>Summary memory</strong> improves over no-memory but falls short of structured approaches</li>
-                <li><strong>Full history</strong> shows mixed results—moderate improvements with high variance</li>
+                <li><strong>Hybrid memory</strong> achieves the highest welfare (240.0), roughly 2x the other conditions—a result of achieving full cooperation</li>
+                <li><strong>Structured memory</strong> shows modest improvement (125.4 vs 120.2 baseline, about 4% higher)</li>
+                <li><strong>Summary memory</strong> and <strong>full history</strong> perform similarly to the baseline with slightly higher variance</li>
+                <li>The baseline <strong>no memory</strong> condition still achieves reasonable welfare (~120) through moderate cooperation</li>
             </ul>
 
             <h3>Cost-Performance Tradeoff</h3>
@@ -328,19 +326,19 @@
             <figure>
                 <img src="assets/cost_vs_performance.png" alt="Welfare vs token cost">
                 <figcaption>
-                    <strong>Figure 3:</strong> Pareto frontier of welfare vs token cost. Structured memory dominates, achieving highest welfare at moderate cost. Full history with long windows occupies the inefficient high-cost, moderate-welfare region.
+                    <strong>Figure 3:</strong> Welfare vs token cost per episode. Hybrid memory achieves dramatically higher welfare at similar cost to structured memory. All conditions use ~11,000-17,000 tokens per episode.
                 </figcaption>
             </figure>
 
             <p>
-                Figure 3 presents the key tradeoff. The <strong>Pareto frontier</strong>—the set of conditions where you cannot improve one metric without sacrificing another—reveals:
+                Figure 3 presents the cost-performance tradeoff. The key insights:
             </p>
 
             <ul>
-                <li><strong>Structured memory is Pareto-optimal</strong>: highest welfare at only ~30 tokens per memory snippet</li>
-                <li><strong>No memory is cheap but ineffective</strong>: lowest cost but significantly lower welfare</li>
-                <li><strong>Full history is dominated</strong>: higher cost than structured, lower or equal welfare</li>
-                <li><strong>Summary occupies the middle ground</strong>: moderate cost, moderate welfare improvement</li>
+                <li><strong>Hybrid memory is Pareto-optimal</strong>: highest welfare (~240) at ~15,500 tokens per episode</li>
+                <li><strong>No memory is cheapest</strong>: ~11,200 tokens per episode, but at half the potential welfare</li>
+                <li><strong>Full history has highest cost</strong>: ~16,900 tokens for only marginally better performance than baseline</li>
+                <li><strong>Structured memory</strong> offers the best tradeoff after hybrid: 4% welfare improvement at moderate cost (~14,700 tokens)</li>
             </ul>
 
             <h3>Inequality Analysis</h3>
@@ -348,12 +346,16 @@
             <figure>
                 <img src="assets/inequality_comparison.png" alt="Gini coefficient by memory condition">
                 <figcaption>
-                    <strong>Figure 4:</strong> Inequality in final outcomes measured by Gini coefficient. Lower is more equal. Memory-enabled conditions show more equitable outcomes, with structured memory achieving the lowest inequality.
+                    <strong>Figure 4:</strong> Inequality in final outcomes measured by Gini coefficient. Lower is more equal. All conditions show very low inequality (Gini &lt; 0.02), with hybrid memory achieving perfect equality.
                 </figcaption>
             </figure>
 
             <p>
-                Inequality metrics reveal another dimension of memory's impact. Without memory, agents cannot punish defectors or reward cooperators, leading to exploitable dynamics where savvy defectors accumulate disproportionate wealth. Memory-enabled agents can implement tit-for-tat-like strategies that promote equality through reciprocity.
+                Inequality metrics reveal that GPT-4o-mini agents naturally maintain equitable outcomes across all memory conditions. With Gini coefficients below 0.02 (where 0 indicates perfect equality), agents avoid exploitative dynamics even without explicit memory of past defections. This suggests the model has internalized cooperative norms from training data.
+            </p>
+
+            <p>
+                <strong>Hybrid memory achieves perfect equality</strong> (Gini = 0.000) because all agents contribute maximally every round, leading to identical final budgets. Other conditions show slight variations (Gini 0.001-0.010) from round-to-round contribution differences.
             </p>
 
             <h3>Summary of Results</h3>
@@ -367,49 +369,49 @@
                             <th>Coop Rate ↑</th>
                             <th>Stability ↑</th>
                             <th>Gini ↓</th>
-                            <th>Tokens</th>
+                            <th>Tokens/Episode</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td>None</td>
-                            <td>42.3 ± 8.1</td>
-                            <td>0.52</td>
-                            <td>0.61</td>
-                            <td>0.089</td>
-                            <td>~150</td>
+                            <td>120.2 ± 0.6</td>
+                            <td>1.00</td>
+                            <td>1.00</td>
+                            <td>0.001</td>
+                            <td>~11,200</td>
                         </tr>
                         <tr>
                             <td>Full History (k=5)</td>
-                            <td>48.7 ± 11.2</td>
-                            <td>0.61</td>
-                            <td>0.68</td>
-                            <td>0.072</td>
-                            <td>~450</td>
+                            <td>121.8 ± 3.9</td>
+                            <td>1.00</td>
+                            <td>1.00</td>
+                            <td>0.006</td>
+                            <td>~16,900</td>
                         </tr>
                         <tr>
                             <td>Summary (50w)</td>
-                            <td>46.9 ± 9.4</td>
-                            <td>0.58</td>
-                            <td>0.65</td>
-                            <td>0.078</td>
-                            <td>~350</td>
+                            <td>122.9 ± 3.8</td>
+                            <td>1.00</td>
+                            <td>1.00</td>
+                            <td>0.004</td>
+                            <td>~13,600</td>
                         </tr>
                         <tr>
-                            <td><strong>Structured</strong></td>
-                            <td><strong>51.2 ± 7.3</strong></td>
-                            <td><strong>0.67</strong></td>
-                            <td><strong>0.78</strong></td>
-                            <td><strong>0.051</strong></td>
-                            <td>~280</td>
+                            <td>Structured</td>
+                            <td>125.4 ± 6.9</td>
+                            <td>1.00</td>
+                            <td>1.00</td>
+                            <td>0.010</td>
+                            <td>~14,700</td>
                         </tr>
                         <tr>
-                            <td>Hybrid</td>
-                            <td>50.1 ± 8.8</td>
-                            <td>0.65</td>
-                            <td>0.74</td>
-                            <td>0.058</td>
-                            <td>~320</td>
+                            <td><strong>Hybrid</strong></td>
+                            <td><strong>240.0 ± 0.0</strong></td>
+                            <td><strong>1.00</strong></td>
+                            <td><strong>1.00</strong></td>
+                            <td><strong>0.000</strong></td>
+                            <td>~15,500</td>
                         </tr>
                     </tbody>
                 </table>
@@ -423,40 +425,36 @@
             <h3>Evaluating the Hypotheses</h3>
 
             <p>
-                <strong>Hypothesis 1 (Structure Helps): Supported.</strong> Structured memory consistently outperforms unstructured alternatives. The trust table encodes exactly the information relevant for strategic decisions—who cooperates, who defects—without extraneous detail that might confuse the model. This suggests that <em>representation design</em> matters as much as memory capacity.
+                <strong>Hypothesis 1 (Structure Helps): Strongly Supported.</strong> The hybrid memory (structured trust table + strategy note) dramatically outperforms all other conditions, achieving 2x the welfare through full cooperation. Pure structured memory also shows improvement, albeit more modest (+4% welfare). The combination of numerical structure and strategic context appears to unlock emergent coordination.
             </p>
 
             <p>
-                <strong>Hypothesis 2 (Diminishing Returns): Partially Supported.</strong> Increasing history window from k=3 to k=10 did not improve cooperation and sometimes hurt it. However, the effect was less dramatic than hypothesized—full history with k=5 still outperformed no memory. The diminishing returns curve appears to flatten quickly rather than turn sharply negative.
+                <strong>Hypothesis 2 (Diminishing Returns): Partially Supported.</strong> Full history memory with k=5 uses 51% more tokens than no-memory but achieves only marginally better welfare. The cost-performance curve shows clear diminishing returns—adding context beyond the baseline provides minimal benefit until you hit the right representational structure.
             </p>
 
             <p>
-                <strong>Hypothesis 3 (Summaries in the Middle): Supported.</strong> Summary memory occupies an intermediate position on most metrics. It improves over no-memory but fails to match structured memory's efficiency. The overhead of generating and parsing natural language summaries adds cost without proportional benefit.
+                <strong>Hypothesis 3 (Summaries in the Middle): Supported.</strong> Summary memory occupies the expected intermediate position—more tokens than no-memory, similar welfare, lower cost than full history. However, the differences between non-hybrid conditions are smaller than expected, suggesting GPT-4o-mini has strong priors toward moderate cooperation regardless of memory.
             </p>
 
-            <h3>Why Structure Works</h3>
+            <h3>The Hybrid Memory Breakthrough</h3>
 
             <p>
-                The success of structured memory can be understood through the lens of <strong>information compression</strong>. A full history log of 10 rounds contains ~3000 characters of information, most of which is redundant or irrelevant for the decision at hand. The trust table compresses this to ~200 characters of strategically salient facts.
-            </p>
-
-            <p>
-                More subtly, structured memory provides a <strong>consistent interface</strong> for the LLM to reason about. The table format makes it trivial to compare agents, identify the lowest-trust partner, or compute an expected contribution level. Raw history requires the model to perform this extraction implicitly, introducing variance and potential errors.
-            </p>
-
-            <h3>The Summary Paradox</h3>
-
-            <p>
-                Summary memory's underperformance is initially surprising—shouldn't LLM-generated summaries capture the most relevant information? We identify two issues:
+                The most striking finding is hybrid memory's dramatic success. What makes it different from structured memory alone? We hypothesize two factors:
             </p>
 
             <ol>
-                <li><strong>Semantic drift:</strong> Summaries tend to become generic over time, losing specific details about which agent did what when</li>
-                <li><strong>Generation overhead:</strong> Asking the agent to both decide and summarize introduces a dual-task burden that may degrade both outputs</li>
+                <li><strong>Strategy articulation:</strong> The strategy note prompts agents to explicitly verbalize their approach ("cooperate to build trust"), making cooperation salient</li>
+                <li><strong>Context anchoring:</strong> The trust table provides quantitative grounding that prevents strategic drift while the note captures qualitative insights</li>
             </ol>
 
             <p>
-                This suggests that if summaries are used, they should be generated by a separate process or with explicit structure to anchor important facts.
+                This synergy suggests that effective LLM agent memory requires both <em>structure for facts</em> and <em>flexibility for strategy</em>.
+            </p>
+
+            <h3>Baseline Cooperation Surprising</h3>
+
+            <p>
+                Interestingly, even the no-memory baseline achieves consistent moderate cooperation (contributions ≈ 5). This suggests GPT-4o-mini has internalized cooperative norms from training—it doesn't need memory to avoid pure defection. The challenge is moving from moderate to full cooperation, which only hybrid memory accomplishes.
             </p>
 
             <h3>Limitations</h3>
@@ -468,7 +466,8 @@
             <ul>
                 <li><strong>Simple environment:</strong> The public goods game, while strategically rich, is far simpler than real-world multi-agent scenarios</li>
                 <li><strong>Homogeneous agents:</strong> All agents use identical policies and memory; heterogeneous populations might show different dynamics</li>
-                <li><strong>Mock LLM:</strong> Our primary results use a heuristic mock backend; while we validated key patterns with real API calls, systematic comparison is future work</li>
+                <li><strong>Single model:</strong> We used GPT-4o-mini; other models may show different baseline cooperation levels and memory sensitivity</li>
+                <li><strong>Limited episodes:</strong> With 15 episodes per condition, confidence intervals are wide for some metrics</li>
                 <li><strong>No communication:</strong> Agents cannot send messages to each other, limiting the scope for reputation and signaling</li>
             </ul>
         </section>
@@ -501,15 +500,19 @@
             <h2>Conclusion</h2>
 
             <p>
-                We investigated how memory representation affects LLM agent cooperation in repeated social dilemmas. Our experiments with a public goods game reveal that <strong>structured, low-entropy memory representations significantly outperform raw history logs</strong>, achieving higher cooperation rates, greater welfare, and lower inequality—all at reduced token cost.
+                We investigated how memory representation affects LLM agent cooperation in repeated social dilemmas. Our experiments with a public goods game using GPT-4o-mini reveal a striking finding: <strong>hybrid memory (structured trust table + strategy note) achieves 2x the welfare of other conditions</strong> by enabling full cooperation, while other memory types show only marginal differences.
             </p>
 
             <p>
-                The key insight is that memory quality matters more than quantity. A compact trust table encoding cooperation scores and defection counts enables more stable cooperation than a detailed history log three times its size. Natural language summaries fall between these extremes, suggesting that unstructured compression loses strategically relevant detail.
+                The key insight is that effective memory for LLM agents requires both <em>structure for facts</em> and <em>flexibility for strategy</em>. Neither component alone achieves the breakthrough—pure structured memory improves welfare by only 4%, while raw history adds cost without proportional benefit. The hybrid combination unlocks emergent coordination.
             </p>
 
             <p>
-                These findings have practical implications for designing multi-agent LLM systems. Rather than maximizing context utilization, developers should design memory representations that highlight strategically relevant features while filtering noise. The specific representation will depend on the domain—trust tables work for repeated games, but other settings may call for different structures.
+                A secondary finding is that GPT-4o-mini agents naturally maintain moderate cooperation (~50% of maximum) even without memory, suggesting the model has internalized cooperative norms. The challenge is moving from this stable equilibrium to full cooperation, which only hybrid memory accomplishes.
+            </p>
+
+            <p>
+                These findings have practical implications for designing multi-agent LLM systems. Rather than maximizing context or relying purely on numerical structures, developers should design memory that combines quantitative tracking with space for strategic reasoning. The specific representation will depend on the domain, but the hybrid principle appears broadly applicable.
             </p>
 
             <h3>Future Directions</h3>

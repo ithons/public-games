@@ -21,10 +21,10 @@
     --border-color: #334155;
     --code-bg: #0f172a;
     
-    /* Typography */
-    --font-display: "Playfair Display", Georgia, serif;
-    --font-body: "Source Sans Pro", -apple-system, BlinkMacSystemFont, sans-serif;
-    --font-mono: "JetBrains Mono", "Fira Code", monospace;
+    /* Typography - System font stacks only (offline-safe) */
+    --font-display: Georgia, "Times New Roman", serif;
+    --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", "Courier New", monospace;
     
     /* Spacing */
     --content-width: 800px;
