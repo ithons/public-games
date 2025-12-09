@@ -446,7 +446,7 @@
             <figure>
                 <img src="assets/neutral_note_ablation.png" alt="Neutral vs cooperative strategy note">
                 <figcaption>
-                    <strong>Figure 7:</strong> Welfare comparison between no memory, hybrid with neutral initialization, and hybrid with cooperative initialization. Error bars show 95% bootstrap CI.
+                    <strong>Figure 6:</strong> Welfare comparison between no memory, hybrid with neutral initialization, and hybrid with cooperative initialization. Error bars show 95% bootstrap CI.
                 </figcaption>
             </figure>
 
@@ -465,11 +465,7 @@
             </p>
 
             <p>
-                This has practical implications: when designing memory for multi-agent LLM systems, the <em>content</em> of initial prompts matters as much as the <em>structure</em>. A neutral scaffold provides no benefit; the scaffold must encode the desired behavioral orientation.
-            </p>
-
-            <p>
-                This finding has important implications: simply adding numerical context (the trust table) does not change behavior. What matters is prompting the model to <em>reason strategically about cooperation</em>—and that reasoning must be seeded with cooperative intent.
+                This has practical implications: when designing memory for multi-agent LLM systems, the <em>content</em> of initial prompts matters as much as the <em>structure</em>. A neutral scaffold provides no benefit; the scaffold must encode the desired behavioral orientation. Simply adding numerical context (the trust table) does not change behavior—what matters is seeding the model with cooperative intent.
             </p>
         </section>
 
@@ -484,7 +480,7 @@
             <figure>
                 <img src="assets/alpha_sweep.png" alt="Welfare vs alpha">
                 <figcaption>
-                    <strong>Figure 6:</strong> Welfare vs multiplier (α) for none, structured, and hybrid conditions. Hybrid maintains full cooperation (welfare = N·(α−1)·c<sub>max</sub>·T) at all α values.
+                    <strong>Figure 7:</strong> Welfare vs multiplier (α) for none, structured, and hybrid conditions. Hybrid maintains full cooperation (welfare = N·(α−1)·c<sub>max</sub>·T) at all α values.
                 </figcaption>
             </figure>
 
