@@ -56,7 +56,10 @@ llm-games/
 ├── tests/                  # Unit tests
 │   ├── test_environment.py
 │   ├── test_memory.py
-│   └── test_sanity.py      # Payoff formula and metric verification
+│   ├── test_sanity.py      # Payoff formula and metric verification
+│   └── test_blog_consistency.py  # Verify blog matches data
+├── tools/                  # Utility scripts
+│   └── check_blog_consistency.py  # Automated blog verification
 ├── run_real_experiments.py # Main experiment script
 └── requirements.txt
 ```
@@ -99,12 +102,28 @@ cp analysis/figures/*.png blog/assets/
 ## Running Tests
 
 ```bash
-# Run all tests
+# Run all tests (includes blog consistency check)
 python -m pytest tests/ -v
 
 # Run sanity tests only
 python -m pytest tests/test_sanity.py -v
+
+# Run blog consistency checker directly
+python tools/check_blog_consistency.py
 ```
+
+## Cost Estimate
+
+Running the full experiment suite (main + ablation + alpha sweep) with GPT-4o-mini:
+
+| Experiment | Episodes | Tokens/Episode | Total Tokens | Est. Cost |
+|------------|----------|----------------|--------------|-----------|
+| Main (5 conditions × 15 ep) | 75 | ~13,500 avg | ~1M | ~$0.15 |
+| Ablation (3 cond × 10 ep) | 30 | ~13,500 avg | ~400k | ~$0.06 |
+| Alpha Sweep (3 α × 3 cond × 10 ep) | 90 | ~13,500 avg | ~1.2M | ~$0.18 |
+| **Total** | 195 | — | ~2.6M | **~$0.40** |
+
+For budget-constrained reproduction, run fewer episodes (e.g., 5 per condition) or test with mock agents first.
 
 ## Experimental Parameters
 
