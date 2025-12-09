@@ -37,10 +37,12 @@ env/
 .ipynb_checkpoints/
 
 # Project-specific
-results/
 logs/
 *.log
 .env
+
+# Results are tracked (not ignored)
+# !results/
 
 # OS
 .DS_Store

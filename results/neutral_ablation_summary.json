@@ -1,0 +1,33 @@
+{
+  "experiment": "neutral_note_ablation",
+  "timestamp": "2025-12-09T16:59:09.201687",
+  "conditions": {
+    "none": {
+      "welfare_mean": 120.0,
+      "welfare_ci_low": 120.0,
+      "welfare_ci_high": 120.0,
+      "contribution_mean": 5.0,
+      "contribution_ci_low": 5.0,
+      "contribution_ci_high": 5.0,
+      "num_episodes": 10
+    },
+    "hybrid": {
+      "welfare_mean": 236.64000000000001,
+      "welfare_ci_low": 229.92000000000002,
+      "welfare_ci_high": 240.0,
+      "contribution_mean": 9.86,
+      "contribution_ci_low": 9.58,
+      "contribution_ci_high": 10.0,
+      "num_episodes": 10
+    },
+    "hybrid_neutral": {
+      "welfare_mean": 124.16000000000001,
+      "welfare_ci_low": 121.03999999999999,
+      "welfare_ci_high": 127.91999999999999,
+      "contribution_mean": 5.173333333333334,
+      "contribution_ci_low": 5.046666666666667,
+      "contribution_ci_high": 5.326666666666666,
+      "num_episodes": 10
+    }
+  }
+}

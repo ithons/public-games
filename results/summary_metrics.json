@@ -1,0 +1,202 @@
+{
+  "summary": {
+    "condition": "summary",
+    "num_episodes": 15,
+    "welfare": {
+      "mean": 124.0,
+      "ci_low": 122.0787,
+      "ci_high": 126.1867,
+      "std": 4.2975
+    },
+    "mean_contribution": {
+      "mean": 5.1667,
+      "ci_low": 5.0866,
+      "ci_high": 5.2578,
+      "std": 0.1791
+    },
+    "cooperation_rate": {
+      "mean": 0.9933,
+      "ci_low": 0.9822,
+      "ci_high": 1.0,
+      "std": 0.0187
+    },
+    "stability": {
+      "mean": 0.9972,
+      "ci_low": 0.9956,
+      "ci_high": 0.9987,
+      "std": 0.0033
+    },
+    "gini": {
+      "mean": 0.0062,
+      "ci_low": 0.0036,
+      "ci_high": 0.0089,
+      "std": 0.0054
+    },
+    "tokens": {
+      "mean": 13628.4667,
+      "ci_low": 13595.395,
+      "ci_high": 13663.4,
+      "std": 70.1273
+    }
+  },
+  "full_history": {
+    "condition": "full_history",
+    "num_episodes": 15,
+    "welfare": {
+      "mean": 120.48,
+      "ci_low": 120.0,
+      "ci_high": 121.44,
+      "std": 1.859
+    },
+    "mean_contribution": {
+      "mean": 5.02,
+      "ci_low": 5.0,
+      "ci_high": 5.06,
+      "std": 0.0775
+    },
+    "cooperation_rate": {
+      "mean": 1.0,
+      "ci_low": 1.0,
+      "ci_high": 1.0,
+      "std": 0.0
+    },
+    "stability": {
+      "mean": 0.9999,
+      "ci_low": 0.9997,
+      "ci_high": 1.0,
+      "std": 0.0003
+    },
+    "gini": {
+      "mean": 0.0021,
+      "ci_low": 0.0,
+      "ci_high": 0.0064,
+      "std": 0.0083
+    },
+    "tokens": {
+      "mean": 16915.6,
+      "ci_low": 16892.4667,
+      "ci_high": 16939.9333,
+      "std": 48.1038
+    }
+  },
+  "none": {
+    "condition": "none",
+    "num_episodes": 15,
+    "welfare": {
+      "mean": 120.32,
+      "ci_low": 120.0,
+      "ci_high": 120.6933,
+      "std": 0.7282
+    },
+    "mean_contribution": {
+      "mean": 5.0133,
+      "ci_low": 5.0,
+      "ci_high": 5.0289,
+      "std": 0.0303
+    },
+    "cooperation_rate": {
+      "mean": 1.0,
+      "ci_low": 1.0,
+      "ci_high": 1.0,
+      "std": 0.0
+    },
+    "stability": {
+      "mean": 0.9998,
+      "ci_low": 0.9995,
+      "ci_high": 1.0,
+      "std": 0.0005
+    },
+    "gini": {
+      "mean": 0.0015,
+      "ci_low": 0.0,
+      "ci_high": 0.0032,
+      "std": 0.0033
+    },
+    "tokens": {
+      "mean": 11206.6,
+      "ci_low": 11190.6,
+      "ci_high": 11224.6,
+      "std": 34.44
+    }
+  },
+  "structured": {
+    "condition": "structured",
+    "num_episodes": 15,
+    "welfare": {
+      "mean": 123.04,
+      "ci_low": 120.7467,
+      "ci_high": 126.0267,
+      "std": 5.4191
+    },
+    "mean_contribution": {
+      "mean": 5.1267,
+      "ci_low": 5.0311,
+      "ci_high": 5.2511,
+      "std": 0.2258
+    },
+    "cooperation_rate": {
+      "mean": 1.0,
+      "ci_low": 1.0,
+      "ci_high": 1.0,
+      "std": 0.0
+    },
+    "stability": {
+      "mean": 0.9988,
+      "ci_low": 0.9978,
+      "ci_high": 0.9997,
+      "std": 0.0019
+    },
+    "gini": {
+      "mean": 0.005,
+      "ci_low": 0.0017,
+      "ci_high": 0.0089,
+      "std": 0.0077
+    },
+    "tokens": {
+      "mean": 14723.0667,
+      "ci_low": 14696.7333,
+      "ci_high": 14747.3333,
+      "std": 52.3975
+    }
+  },
+  "hybrid": {
+    "condition": "hybrid",
+    "num_episodes": 15,
+    "welfare": {
+      "mean": 240.0,
+      "ci_low": 240.0,
+      "ci_high": 240.0,
+      "std": 0.0
+    },
+    "mean_contribution": {
+      "mean": 10.0,
+      "ci_low": 10.0,
+      "ci_high": 10.0,
+      "std": 0.0
+    },
+    "cooperation_rate": {
+      "mean": 1.0,
+      "ci_low": 1.0,
+      "ci_high": 1.0,
+      "std": 0.0
+    },
+    "stability": {
+      "mean": 1.0,
+      "ci_low": 1.0,
+      "ci_high": 1.0,
+      "std": 0.0
+    },
+    "gini": {
+      "mean": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0,
+      "std": 0.0
+    },
+    "tokens": {
+      "mean": 15489.6667,
+      "ci_low": 15470.7983,
+      "ci_high": 15510.135,
+      "std": 40.4451
+    }
+  }
+}
