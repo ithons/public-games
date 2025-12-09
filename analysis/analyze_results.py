@@ -14,11 +14,18 @@ import matplotlib.pyplot as plt
 import matplotlib
 matplotlib.use("Agg")  # Non-interactive backend
 
-import seaborn as sns
+# Color palette (similar to seaborn husl)
+COLORS = ["#f77189", "#50b131", "#3ba3ec", "#f9a630", "#a48cf4", "#36ada4"]
 
 # Set style for publication-quality figures
-plt.style.use("seaborn-v0_8-whitegrid")
-sns.set_palette("husl")
+plt.rcParams.update({
+    "figure.facecolor": "white",
+    "axes.facecolor": "white",
+    "axes.grid": True,
+    "grid.alpha": 0.3,
+    "axes.spines.top": False,
+    "axes.spines.right": False,
+})
 
 
 @dataclass
@@ -183,7 +190,7 @@ def plot_cooperation_over_time(
     
     fig, ax = plt.subplots(figsize=(10, 6))
     
-    colors = sns.color_palette("husl", len(all_metrics))
+    colors = COLORS[:len(all_metrics)]
     
     for (mem_type, metrics), color in zip(all_metrics.items(), colors):
         rounds = list(range(1, len(metrics.mean_contribution_per_round) + 1))
@@ -223,7 +230,7 @@ def plot_welfare_comparison(
     means = [m.total_welfare_mean for m in all_metrics.values()]
     stds = [m.total_welfare_std for m in all_metrics.values()]
     
-    colors = sns.color_palette("husl", len(mem_types))
+    colors = COLORS[:len(mem_types)]
     bars = ax.bar(mem_types, means, yerr=stds, capsize=5, color=colors, edgecolor="black", linewidth=1)
     
     ax.set_xlabel("Memory Condition", fontsize=12)
@@ -259,7 +266,7 @@ def plot_inequality_comparison(
     means = [m.gini_mean for m in all_metrics.values()]
     stds = [m.gini_std for m in all_metrics.values()]
     
-    colors = sns.color_palette("husl", len(mem_types))
+    colors = COLORS[:len(mem_types)]
     bars = ax.bar(mem_types, means, yerr=stds, capsize=5, color=colors, edgecolor="black", linewidth=1)
     
     ax.set_xlabel("Memory Condition", fontsize=12)
@@ -282,7 +289,7 @@ def plot_cost_vs_performance(
     
     fig, ax = plt.subplots(figsize=(10, 6))
     
-    colors = sns.color_palette("husl", len(all_metrics))
+    colors = COLORS[:len(all_metrics)]
     
     for (mem_type, metrics), color in zip(all_metrics.items(), colors):
         ax.scatter(
@@ -332,8 +339,8 @@ def plot_cooperation_metrics(
     rates = [m.cooperation_rate for m in all_metrics.values()]
     stability = [m.cooperation_stability for m in all_metrics.values()]
     
-    bars1 = ax.bar(x - width/2, rates, width, label="Cooperation Rate", color=sns.color_palette("husl")[0])
-    bars2 = ax.bar(x + width/2, stability, width, label="Stability", color=sns.color_palette("husl")[3])
+    bars1 = ax.bar(x - width/2, rates, width, label="Cooperation Rate", color=COLORS[0])
+    bars2 = ax.bar(x + width/2, stability, width, label="Stability", color=COLORS[3])
     
     ax.set_xlabel("Memory Condition", fontsize=12)
     ax.set_ylabel("Score (0-1)", fontsize=12)
