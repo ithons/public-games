@@ -6,85 +6,141 @@
 
 *How much memory do LLM agents really need to maintain cooperation in repeated social dilemmas?*
 
-This project investigates how different memory representations affect cooperation, welfare, and computational cost when LLM-based agents play a repeated public-goods game.
+This project investigates how different memory representations affect cooperation, welfare, and computational cost when LLM-based agents play a repeated public goods game.
 
 ## Key Finding
 
-**Hybrid memory (trust table + strategy note) achieves 2x the welfare of other conditions** by enabling full cooperation. While GPT-4o-mini agents naturally maintain moderate cooperation (~50%) without memory, the hybrid representation unlocks emergent coordination.
+**Hybrid memory (trust table + strategy note) achieves 2× the welfare of all other conditions** by enabling perfect cooperation. While GPT-4o-mini agents maintain moderate cooperation (~50%) without memory, only the hybrid representation unlocks full cooperation.
 
-| Memory Type | Welfare | Tokens/Episode |
-|-------------|---------|----------------|
-| None | 120.2 ± 0.6 | ~11,200 |
-| Full History (k=5) | 121.8 ± 3.9 | ~16,900 |
-| Summary (50w) | 122.9 ± 3.8 | ~13,600 |
-| Structured | 125.4 ± 6.9 | ~14,700 |
-| **Hybrid** | **240.0 ± 0.0** | ~15,500 |
+| Memory Type | Welfare (95% CI) | Mean Contrib | Tokens/Episode |
+|-------------|------------------|--------------|----------------|
+| None | 120.3 [120.0, 120.7] | 5.01 | ~11,200 |
+| Full History (k=5) | 120.5 [120.0, 121.4] | 5.02 | ~16,900 |
+| Summary (50w) | 124.0 [122.1, 126.2] | 5.17 | ~13,600 |
+| Structured | 123.0 [120.7, 126.0] | 5.13 | ~14,700 |
+| **Hybrid** | **240.0 [240.0, 240.0]** | **10.00** | ~15,500 |
 
-## Hypotheses & Results
+## Key Insights
 
-1. **Structure Helps**: ✅ **Strongly Supported** — Hybrid memory (structured + strategy note) dramatically outperforms other conditions.
-
-2. **Diminishing Returns**: ✅ **Partially Supported** — Full history uses 51% more tokens than baseline for marginal improvement.
-
-3. **Summaries in the Middle**: ✅ **Supported** — Summary memory occupies the expected intermediate position.
+1. **Hybrid achieves theoretical maximum welfare** (240) through perfect cooperation
+2. **Full history provides NO benefit** over no memory (identical welfare)
+3. **The strategy note is the critical component** — trust table alone doesn't help
+4. **Effect is robust** across different multiplier values (α = 1.5, 1.8, 2.1)
 
 ## Project Structure
 
 ```
 llm-games/
-├── environment/            # Public goods environment
+├── environment/            # Public goods game environment
 │   └── public_goods_env.py
 ├── agents/                 # Agent policies
 │   ├── base_policy.py
-│   └── llm_policy.py
+│   └── llm_policy.py       # LLM-based policy with OpenAI backend
 ├── memory/                 # Memory modules
-│   ├── base_memory.py
-│   ├── no_memory.py
-│   ├── full_history.py
-│   ├── summary_memory.py
-│   ├── structured_memory.py
-│   └── hybrid_memory.py
+│   ├── base_memory.py      # Abstract interface
+│   ├── no_memory.py        # Baseline: no history
+│   ├── full_history.py     # Last k rounds verbatim
+│   ├── summary_memory.py   # LLM-generated rolling summary
+│   ├── structured_memory.py # Trust table (numerical)
+│   └── hybrid_memory.py    # Trust table + strategy note
 ├── experiments/            # Experiment runners
-│   ├── run_experiments.py
-│   └── configs/
+│   └── run_experiments.py
 ├── analysis/               # Analysis and plotting
-│   ├── analyze_results.py
-│   └── figures/
-├── blog/                   # Technical blog
+│   ├── analyze_results.py  # Compute metrics with bootstrap CIs
+│   └── figures/            # Generated plots
+├── blog/                   # Technical blog (offline-safe)
 │   ├── index.html
-│   └── assets/
-└── tests/                  # Unit tests
+│   ├── style.css
+│   └── assets/             # Figures for blog
+├── results/                # Experiment results (JSON)
+├── tests/                  # Unit tests
+│   ├── test_environment.py
+│   ├── test_memory.py
+│   └── test_sanity.py      # Payoff formula and metric verification
+├── run_real_experiments.py # Main experiment script
+└── requirements.txt
 ```
 
 ## Setup
 
 ```bash
-python -m venv venv
+# Create virtual environment
+python3 -m venv venv
 source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Set OpenAI API key
+echo "OPENAI_API_KEY=your-key-here" > .env
 ```
 
 ## Running Experiments
 
 ```bash
-# Run with a specific memory condition
-python -m experiments.run_experiments --memory-type structured --episodes 50 --seed 42
+# Run all experiments (main + ablation + alpha sweep)
+python run_real_experiments.py
 
-# Run all conditions
-python -m experiments.run_experiments --all-conditions --episodes 50
+# Or run individual conditions via CLI
+python -m experiments.run_experiments --memory-type structured --episodes 15 --use-real-llm
+python -m experiments.run_experiments --all-conditions --episodes 15 --use-real-llm
 ```
 
 ## Generating Analysis
 
 ```bash
-python -m analysis.analyze_results --results-dir results/ --output-dir analysis/figures/
+# Generate plots and metrics summary
+python -m analysis.analyze_results --results-dir results --output-dir analysis/figures
+
+# Copy figures to blog
+cp analysis/figures/*.png blog/assets/
 ```
+
+## Running Tests
+
+```bash
+# Run all tests
+python -m pytest tests/ -v
+
+# Run sanity tests only
+python -m pytest tests/test_sanity.py -v
+```
+
+## Experimental Parameters
+
+| Parameter | Value |
+|-----------|-------|
+| Model | GPT-4o-mini |
+| Temperature | 0.7 |
+| Agents (N) | 3 |
+| Rounds (T) | 10 |
+| Starting Budget (B) | 20.0 |
+| Max Contribution (c_max) | 10 |
+| Multiplier (α) | 1.8 (main), 1.5/2.1 (sweep) |
+| Episodes | 15 (main), 10 (ablation/sweep) |
+
+## Metrics
+
+All metrics computed with 95% bootstrap confidence intervals (10,000 resamples):
+
+- **Welfare**: Sum of payoffs across all agents and rounds per episode
+- **Mean Contribution**: Average contribution per (agent, round)
+- **Gini Coefficient**: Inequality of final budgets (0 = equal)
+- **Token Cost**: Total prompt + completion tokens per episode
 
 ## Blog
 
-Open `blog/index.html` in a browser to view the technical write-up. All assets are local — no network required.
+Open `blog/index.html` in a browser to view the technical write-up. All assets are local — **renders fully offline**.
+
+## Results Files
+
+After running experiments, the `results/` directory contains:
+
+- `none.json`, `full_history.json`, `summary.json`, `structured.json`, `hybrid.json` — Main experiments
+- `ablation_*.json` — Ablation comparing none vs structured vs hybrid
+- `sweep_alpha*_*.json` — Alpha sweep for robustness testing
+- `summary_metrics.json` — Computed metrics for all conditions
 
 ## License
 
 MIT License — for educational purposes.
-

@@ -9,6 +9,7 @@ openai>=1.0.0
 # Configuration and CLI
 pyyaml>=6.0
 click>=8.1.0
+python-dotenv>=1.0.0
 
 # Type checking and development
 mypy>=1.5.0

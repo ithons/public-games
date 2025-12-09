@@ -5,6 +5,9 @@ CLI and programmatic interface for running public goods experiments
 with different memory conditions.
 """
 
+from dotenv import load_dotenv
+load_dotenv()
+
 import json
 import os
 from dataclasses import dataclass, asdict
